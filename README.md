@@ -12,44 +12,57 @@ LINEスタンプを自動生成するPythonプロジェクトです。Midjourney
 ## セットアップ手順
 
 1. Pythonのインストール:
-
+```
 brew install python@3.9
-
+```
 2. 仮想環境の作成と有効化:
-
+```
 python3.9 -m venv venv
 source venv/bin/activate
-
+```
 3. 必要なパッケージのインストール:
-
+```
 pip install -r requirements.txt
-
+```
 4. プロジェクトの構造を作成:
-
+```
 mkdir -p src/{config,generators,processors,models,utils}
 mkdir -p data/{input,output}
 touch .env
-
+```
 5. 環境変数の設定:
 .envファイルを編集し、以下の内容を設定:
-
+```
 MIDJOURNEY_API_KEY=your_api_key_here
-
+```
 ## プロジェクト構造
-
+```
 ai_create_line_stamp/
 ├── .env                    # API keyなどの環境変数
 ├── requirements.txt        # 必要なパッケージリスト
-├── src/
-│   ├── config/            # 設定ファイル
-│   ├── generators/        # Midjourney API関連
-│   ├── processors/        # 画像処理関連
-│   ├── models/           # スタンプモデル
-│   └── utils/            # ユーティリティ関数
-└── data/
-    ├── input/            # 入力画像保存用
-    └── output/           # 生成された画像保存用
-
+├── src/                   # ソースコードディレクトリ
+│   ├── __init__.py
+│   ├── config/           # 設定ファイル
+│   │   └── config.py
+│   ├── generators/       # Midjourney API関連
+│   │   ├── __init__.py
+│   │   └── midjourney.py
+│   ├── processors/       # 画像処理関連
+│   │   ├── __init__.py
+│   │   └── image_processor.py
+│   ├── models/          # スタンプモデル
+│   │   ├── __init__.py
+│   │   └── stamp.py
+│   └── utils/           # ユーティリティ関数
+│       ├── __init__.py
+│       └── helpers.py
+└── data/                # データディレクトリ
+    ├── input/          # 入力画像保存用
+    │   ├── person.jpg
+    │   └── dress.jpg
+    └── output/         # 生成された画像保存用
+        └── stamps/
+```
 ## 使用方法
 
 1. 入力画像の配置:
@@ -63,13 +76,13 @@ ai_create_line_stamp/
 - 画像品質: 高品質、ノイズの少ないもの
 
 2. プログラムの実行:
-
+```
 python src/main.py
-
+```
 3. 生成された画像の確認:
-
+```
 open data/output/
-
+```
 ## 注意事項
 
 - Midjourneyの利用規約に従って使用してください
@@ -78,7 +91,7 @@ open data/output/
 - M1 Macでの動作を前提としています
 
 ## トラブルシューティング
-
+```
 1. Python 3.9のインストールエラー:
 - Homebrewの更新
 - brew update
@@ -97,5 +110,5 @@ open data/output/
 - rm -rf venv
 - 再作成
 - python3.9 -m venv venv
-
+```
 
