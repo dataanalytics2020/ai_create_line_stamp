@@ -1,13 +1,14 @@
+import asyncio
 from pathlib import Path
-from typing import List
-from src.models.stamp import StampConfig, Stamp
-from src.processors.image_processor import ImageProcessor
-from src.generators.midjourney import MidjourneyGenerator
 import os
 from dotenv import load_dotenv
+from src.config.messages import STAMP_MESSAGES
+from src.models.stamp import StampConfig
+from src.processors.image_processor import ImageProcessor
+from src.generators.midjourney import MidjourneyGenerator
 
-def main():
-    """メイン処理"""
+async def generate_stamps():
+    """スタンプ生成のメイン処理"""
     # 環境変数の読み込み
     load_dotenv()
     
@@ -16,20 +17,51 @@ def main():
     
     # 各クラスのインスタンス化
     processor = ImageProcessor(config)
-    generator = MidjourneyGenerator(os.getenv("MIDJOURNEY_API_KEY"))
+    generator = MidjourneyGenerator(
+        discord_token=os.getenv("DISCORD_TOKEN"),
+        channel_id=int(os.getenv("DISCORD_CHANNEL_ID"))
+    )
     
     # 入力画像のパス
     base_image = Path("data/input/person.jpg")
     dress_image = Path("data/input/dress.jpg")
     
-    # 画像生成
-    generated_images = generator.generate_images(base_image, dress_image)
+    # 出力ディレクトリの作成
+    output_dir = Path("data/output/stamps")
+    output_dir.mkdir(parents=True, exist_ok=True)
     
-    # 画像処理
-    for image_path in generated_images:
-        processed_image = processor.remove_background(image_path)
-        resized_image = processor.resize_image(processed_image)
-        # 保存処理など
+    # メッセージごとに画像を生成して処理
+    for i, message in enumerate(STAMP_MESSAGES):
+        print(f"スタンプ {i+1}/{len(STAMP_MESSAGES)} を生成中...")
+        
+        # 画像生成
+        generated_image = await generator.generate_image(
+            base_image,
+            dress_image,
+            message=message
+        )
+        
+        if generated_image:
+            # 背景除去
+            processed_image = processor.remove_background(generated_image)
+            
+            # サイズ調整
+            resized_image = processor.resize_image(processed_image)
+            
+            # テキスト追加
+            final_image = processor.add_text_to_image(resized_image, message)
+            
+            # 保存
+            output_path = output_dir / f"stamp_{i+1:02d}.png"
+            final_image.save(output_path, "PNG")
+            
+            print(f"スタンプ {i+1} を保存しました: {output_path}")
+        else:
+            print(f"スタンプ {i+1} の生成に失敗しました")
+
+def main():
+    """エントリーポイント"""
+    asyncio.run(generate_stamps())
 
 if __name__ == "__main__":
     main()
