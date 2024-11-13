@@ -67,29 +67,61 @@ ai_create_line_stamp/
 
 ### 基本的な使い方
 
-1. **画像の準備と配置**
+1. **Discord Botのセットアップ**
+   - Discordアプリケーションを作成し、Botトークンを取得
+   - MidjourneyボットのあるサーバーにBotを招待
+   - .envファイルに以下の内容を設定:
+   ```
+   DISCORD_TOKEN=your_discord_bot_token
+   DISCORD_CHANNEL_ID=your_channel_id
+   ```
+
+2. **画像の準備と配置**
    - `data/input/person.jpg` に自分の全身写真を配置
    - `data/input/dress.jpg` に参考にしたいドレス画像を配置
 
-2. **プログラムの実行**
+3. **プログラムの実行**
    ```
    python src/main.py
    ```
 
-3. **AIによる画像生成**
-   - 各スタンプのテキストに合わせて、1枚ずつ最適な画像を生成
-   - テキストの感情分析に基づいて、表情やポーズを自動調整
+4. **AIによる画像生成プロセス**
+   - Discord APIを使用してMidjourneyと連携
+   - 各スタンプのテキストごとに以下の処理を実行:
+     1. テキストの感情分析
+     2. 感情に合わせたプロンプト生成
+     3. Discordチャンネルに画像とプロンプトを送信
+     4. Midjourneyからの応答を待機（30-60秒）
+     5. 生成された画像をダウンロード
    - 例：
-     - 「ありがとう」→ 感謝の表情で生成
-     - 「待ってます」→ 少し寂しげな表情で生成
-     - 「嬉しい」→ 明るい笑顔で生成
-   - 生成には1枚あたり約30-60秒かかります
+     - 「ありがとう」→ "elegant hostess with a warm grateful smile"
+     - 「待ってます」→ "charming hostess with a slightly lonely expression"
+     - 「嬉しい」→ "beautiful hostess with a bright cheerful smile"
 
-4. **自動画像処理**
+5. **自動画像処理**
    - 生成された画像の背景が自動で削除されます
    - LINEスタンプサイズ（370x320px）に自動調整されます
    - テキストが画像に追加されます
    - 処理済み画像は `data/output/stamps/` に保存されます
+
+### 画像生成の技術詳細
+
+```
+[Discord Bot] ─→ [Midjourneyチャンネル]
+      ↓                    ↓
+  感情分析            画像生成開始
+      ↓                    ↓
+プロンプト生成    ←→    生成処理
+      ↓                    ↓
+  画像ダウンロード  ←─  生成完了通知
+      ↓
+  画像後処理
+```
+
+- **プロンプト生成**: テキストの感情に基づいて最適なプロンプトを自動生成
+- **画像生成監視**: Discord WebSocketを使用して生成状態をリアルタイム監視
+- **エラーハンドリング**: タイムアウトや生成失敗時の再試行機能
+- **非同期処理**: asyncioを使用した効率的な画像生成と処理
 
 ### 入力画像の要件
 
